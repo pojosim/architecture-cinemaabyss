@@ -72,3 +72,18 @@
 ![kafka](docs/images/kafka_1.png)
 
 ![tests_1](docs/images/tests_1.png)
+
+## Задание 3
+
+Доработайте src/kubernetes/event-service.yaml и src/kubernetes/proxy-service.yaml
+
+Необходимо создать Deployment и Service
+Доработайте ingress.yaml, чтобы можно было с помощью тестов проверить создание событий
+
+Добавьте сюда скриншота вывода при вызове https://cinemaabyss.example.com/api/movies и скриншот вывода event-service после вызова тестов.
+
+![task_3_1](docs/images/task_3_1.png)
+
+![task_3_2](docs/images/task_3_2.png)
+
+## Задание 4
