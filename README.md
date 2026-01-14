@@ -87,3 +87,15 @@
 ![task_3_2](docs/images/task_3_2.png)
 
 ## Задание 4
+
+1.Перейдите в директорию helm и отредактируйте файл values.yaml
+
+2.В папке ./templates/services заполните шаблоны для proxy-service.yaml и events-service.yaml
+
+3.Проверьте установку чартом helm-а
+
+Потом вызовите https://cinemaabyss.example.com/api/movies и приложите скриншот развертывания helm и вывода https://cinemaabyss.example.com/api/movies
+
+![task_4_1](docs/images/task_4_1.png)
+
+![task_4_2](docs/images/task_4_2.png)
