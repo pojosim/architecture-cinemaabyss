@@ -2,9 +2,14 @@ name: API Tests
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - '.github/workflows/docker-build-push.yml'
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
+  release:
+    types: [ published ]
   workflow_dispatch:
     inputs:
       environment:

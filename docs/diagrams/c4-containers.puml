@@ -1,0 +1,68 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(userWeb, "Пользователь", "Пользователи Веб сайта")
+Person(userMobile, "Пользователь", "Пользователи Мобильного клиента")
+Person(userTv, "Пользователь", "Пользователи умных телевизоров SmartTV")
+
+System_Boundary(cinema, "Архитектура стримингового сервиса 'Кинозвезда'") {
+    'Инфраструктурный слой
+    Container(api_gateway, "API Gateway", "Подсистема: Nginx/Kong", "Маршрутизация, TLS, rate limiting")
+    Container(bff_gateway, "BFF_Gateway", "Подсистема: Go", "Разделяет REST интерфейсы для WEB/Mobile/SmartTV устройств")
+    ContainerQueue(events_service, "Event Service", "Подсистема: RabbitMQ/Kafka", "Асинхронная коммуникация")
+
+    'Клиентский слой
+    Container(web_application, "Web application", "Подсистема: JavaScript/React", "Предоставляет доступ к онлайн кинотеатру через браузер")
+    Container(mobile_application, "Mobile application", "Подсистема: Kotlin/Swift", "Предоставляет доступ к онлайн кинотеатру через мобильный клиент")
+
+    'Домен пользователя и безопасности
+    Container(auth_service, "Auth Service", "Подсистема: Keycloak/JWT", "Аутентификация и авторизация, управления сессиями")
+    Container(user_service, "User Service", "Подсистема: Go", "Профили пользователей, история просмотров")
+    Container(user_service_db, "User Database", "Подсистема: PostgresSQL", "Хранит профили пользователей, подписки и оплаты")
+
+    'Домен оплаты
+    Container(payment_service, "Payment Service", "Подсистема: Go", "Обработка платежей, управления подписками")
+
+    'Домен видео-контента
+    Container(movie_service, "Movie Service", "Подсистема: Go", "Отображает каталог фильмов, рейтинги, отзывы, рекомендации, предоставляет сервис поиска по каталогу")
+    Container(movie_service_db, "Movie Database", "Подсистема: Go", "Хранит метаданные видео контента, рейтинги, отзывы, рекомендации")
+    Container(streaming_service, "Streaming Service", "Подсистема: Go", "Передача видео-контента, адаптивный стриминг")
+}
+
+System_Boundary(external_recommendation_system, "Внешняя рекомендательная система") {
+    ContainerQueue_Ext(external_recommendation_queue, "Сервис взаимодействия с внешними потребителями")
+}
+
+System_Ext(external_content_storage, "External S3 Content Storage", "Внешняя хранилище видео-контент")
+System_Ext(external_payment, "Внешняя платежная система")
+System_Ext(external_online_cinema, "Партнерские площадки онлайн кинотеатров")
+
+Rel(userWeb, web_application, "Ищет фильмы, просматривает фильмы, оставляет отзывы, управляет подпиской", "HTTPS/HLS")
+Rel(userMobile, mobile_application, "Ищет фильмы, просматривает фильмы, оставляет отзывы, управляет подпиской", "HTTPS/HLS")
+Rel(userTv, api_gateway, "Ищет фильмы, просматривает фильмы, управляет подпиской", "HTTPS/HLS")
+
+Rel(web_application, api_gateway, "Маршрутизация запросов", "HTTPS/HLS")
+Rel(mobile_application, api_gateway, "Маршрутизация запросов", "HTTPS/HLS")
+
+Rel_L(api_gateway, auth_service, "Аутентификация", "HTTP/REST")
+Rel(api_gateway, bff_gateway, "Маршрутизация запросов", "HTTPS")
+Rel(bff_gateway, user_service, "Получает профиль пользователя", "HTTP/REST")
+Rel(bff_gateway, movie_service, "Ищет фильмы, получает отзывы по фильмам, получает рекомендации", "HTTP/REST")
+Rel(api_gateway, streaming_service, "Получает потоковое видео", "HLS")
+Rel(bff_gateway, payment_service, "Управляет подпиской", "HTTP/REST")
+
+Rel(user_service, user_service_db, "CRUD операции", "SQL")
+Rel(user_service, events_service, "Подписывается на события платежей пользователей, Подписывается на историю просмотров", "TCP/AMQP")
+
+Rel(movie_service, movie_service_db, "CRUD операции", "SQL")
+Rel(movie_service, external_recommendation_queue, "Подписывается на рекомендации/новинки", "TCP/AMQP")
+Rel(movie_service, external_online_cinema, "Получает каталог доступных фильмов", "HTTPS/REST")
+
+Rel(streaming_service, external_content_storage, "Получение видео", "HTTP/REST")
+Rel(streaming_service, external_online_cinema, "Получение видео", "HTTPS")
+Rel(streaming_service, events_service, "Публикует события истории просмотра пользователей", "TCP/AMQP")
+
+Rel(payment_service, external_payment, "Интеграция с внешней системой оплаты", "HTTPS")
+Rel(payment_service, events_service, "Публикует события платежей пользователей", "TCP/AMQP")
+
+@enduml
